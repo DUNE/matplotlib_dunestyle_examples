@@ -18,8 +18,8 @@ cd matplotlib_dunestyle_examles
 
 #### Using venv:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 #### Using conda:
