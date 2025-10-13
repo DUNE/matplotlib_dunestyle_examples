@@ -205,3 +205,11 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Generated plots (keep directory structure)
+plots/*.png
+plots/*.pdf
+plots/*.svg
+plots/*.eps
+plots/*.jpg
+!plots/README.md
