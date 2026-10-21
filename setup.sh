@@ -1,20 +1,16 @@
 #!/bin/bash
-
-# This script sets up the environment for DUNE analysis by downloading necessary styles and configurations.
-mkdir -p styles
-
+# Create .venv with the official DUNE plot style and plotipus.
+#   source setup.sh            # pinned dune_plot_style release (requirements.txt)
+#   source setup.sh --latest   # latest dune_plot_style release instead
 python3 -m venv .venv
 source .venv/bin/activate
-
-cd styles
-export DUNE_PLOT_STYLE_LATEST_TAG=`curl --silent "https://api.github.com/repos/DUNE/dune_plot_style/releases" | jq -r 'map(select(.prerelease == false)) | first | .tag_name'`
-wget --no-check-certificate https://github.com/DUNE/dune_plot_style/archive/refs/tags/${DUNE_PLOT_STYLE_LATEST_TAG}.tar.gz -O dune_plot_style.tar.gz
-tar -xvzf dune_plot_style.tar.gz
-# Remove "v" from tag name
-export DUNE_PLOT_STYLE_LATEST_TAG=${DUNE_PLOT_STYLE_LATEST_TAG#v}
-cd dune_plot_style-${DUNE_PLOT_STYLE_LATEST_TAG}
-
-python3 -m pip install .
-cd ../../
-
-pip install -r requirements.txt
+python3 -m pip install --quiet --upgrade pip
+python3 -m pip install --quiet -r requirements.txt
+if [ "$1" == "--latest" ]; then
+    TAG=$(curl --silent "https://api.github.com/repos/DUNE/dune_plot_style/releases" \
+        | python3 -c "import json, sys; print(next(r['tag_name'] for r in json.load(sys.stdin) if not r['prerelease']))")
+    python3 -m pip install --quiet --force-reinstall --no-deps \
+        "dune_plot_style @ https://github.com/DUNE/dune_plot_style/archive/refs/tags/${TAG}.tar.gz"
+    echo "dune_plot_style ${TAG} installed"
+fi
+echo "Environment ready: run 'python run_examples.py'"
