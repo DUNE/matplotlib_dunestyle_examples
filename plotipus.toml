@@ -1,5 +1,5 @@
-# plotipus project: `plotipus run dune` draws every command in
-# input/plots/dune_scripts.txt into output/plots.
+# plotipus project: `plotipus run <list>` draws every command of
+# input/plots/<list>_scripts.txt into output/plots (`python run.py` runs all lists).
 [project]
 data_root = "input/data"
 plots = "input/plots"
