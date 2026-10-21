@@ -1,141 +1,121 @@
-# DUNE Matplotlib Style Examples
+# DUNE matplotlib style examples
 
-Template repository for creating publication-quality plots for DUNE (Deep Underground Neutrino Experiment) using matplotlib with custom DUNE styling.
+Template repository for DUNE plots and tables that follow the official
+[dune_plot_style](https://github.com/DUNE/dune_plot_style), drawn with
+[plotipus](https://github.com/mantheys/plotipus).
 
-## Overview
+The analysis writes its results as pickled pandas DataFrames; every figure is
+then **one line** in a plain-text command list:
 
-This repository provides examples and templates for creating consistent, publication-ready plots following DUNE collaboration standards. It includes:
-
-- **Custom DUNE matplotlib style** - Professional styling for scientific plots
-- **Example scripts** - Demonstrations of common plot types
-- **Template structure** - Organized directory layout for your analysis
-
-## Quick Start
-
-### Installation
-
-1. Clone this repository:
 ```bash
-git clone https://github.com/DUNE/matplotlib_dunestyle_examles.git
-cd matplotlib_dunestyle_examles
+hist --datafile Hist1D -x Values --hue Sample --bins 50 --rangex -5 5 --dune_label simulation
 ```
 
-2. Install required dependencies:
+Styling (DUNE style sheet, Okabe-Ito colours, `DUNE Simulation` /
+`DUNE Preliminary` watermarks) is applied by a small plotipus plugin, so the
+command lists only describe *what* to draw.
+
+| | | |
+|---|---|---|
+| ![](docs/gallery/hist1d.png) | ![](docs/gallery/datafit.png) | ![](docs/gallery/hist2d.png) |
+| ![](docs/gallery/contour.png) | ![](docs/gallery/stacked.png) | ![](docs/gallery/overlay.png) |
+| ![](docs/gallery/efficiency.png) | ![](docs/gallery/resolution.png) | ![](docs/gallery/reco_vs_true.png) |
+
+The first six reproduce the examples shipped with dune_plot_style
+(`examples/matplotlib/example.py`); the last row shows typical analysis
+figures (one curve per detector configuration and sample, binned estimators,
+per-configuration 2D maps).
+
+## Quick start
+
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/DUNE/matplotlib_dunestyle_examples.git
+cd matplotlib_dunestyle_examples
+source setup.sh             # .venv with dune_plot_style + plotipus
+python run_examples.py      # toy data, then every figure and table
 ```
 
-### Running Examples
+Figures land in `output/plots`, LaTeX/HTML tables in `output/tables`.
+`source setup.sh --latest` installs the newest dune_plot_style release
+instead of the pinned one.
 
-Run all examples at once:
+Once the data exist, single lists or commands run directly:
+
 ```bash
-python run_examples.py
+plotipus run dune                    # input/plots/dune_scripts.txt
+plotipus run showcase --match Events # only the matching commands
+plotipus run dune --tables           # input/tables/dune_scripts.txt
+plotipus line --help                 # every option of a plot kind
 ```
 
-Or run individual examples:
-```bash
-python examples/example_lineplot.py
-python examples/example_histogram.py
-python examples/example_errorbar.py
-python examples/example_2dplot.py
-python examples/example_multipanel.py
-```
-
-Output plots will be saved in the `plots/` directory.
-
-## Repository Structure
+## Layout
 
 ```
-matplotlib_dunestyle_examles/
-├── examples/           # Example plotting scripts
-│   ├── example_lineplot.py      # Basic line plots
-│   ├── example_histogram.py     # Histograms for distributions
-│   ├── example_errorbar.py      # Data with uncertainties
-│   ├── example_2dplot.py        # 2D heatmaps and contours
-│   └── example_multipanel.py    # Multi-panel figures
-├── styles/            # Matplotlib style configurations
-│   └── dunestyle.mplstyle      # DUNE plot style
-├── data/              # Place your data files here
-├── plots/             # Output directory for generated plots
-├── requirements.txt   # Python dependencies
-└── run_examples.py    # Script to run all examples
+plotipus.toml                 project: data root, command lists, style, plugin
+config/style.json             label/colour mappings, legend conventions
+src/dune_plotipus/            plugin: DUNE style sheet + watermark options
+scripts/make_example_data.py  stand-in for an analysis: writes input/data/*.pkl
+input/plots/*_scripts.txt     one figure per line
+input/tables/*_scripts.txt    one table per line
+output/                       generated (git-ignored)
+docs/gallery/                 the figures shown above
 ```
 
-## Using DUNE Style in Your Plots
+## Making your own plots
 
-To use the DUNE style in your own scripts:
+1. **Store results as DataFrames**, one row per series, whole arrays in the
+   cells (see `scripts/make_example_data.py`):
 
-```python
-import matplotlib.pyplot as plt
-import os
+   ```python
+   pd.DataFrame([{"Energy": energy, "Efficiency": eff, "EfficiencyError": err,
+                  "Config": "hd_1x2x6", "Name": "marley", "Variable": "Efficiency"}]
+                ).to_pickle("input/data/hd_1x2x6_marley_Efficiency.pkl")
+   ```
 
-# Load DUNE style
-style_path = 'styles/dunestyle.mplstyle'
-plt.style.use(style_path)
+   A `<Column>Error` column is picked up by `--errory`; `Config`/`Name`
+   columns (and the `{config}_{name}_{datafile}.pkl` file names) let one
+   command overlay detector configurations and samples.
 
-# Create your plot
-fig, ax = plt.subplots()
-ax.plot([1, 2, 3], [1, 4, 9])
-ax.set_xlabel('x [units]')
-ax.set_ylabel('y [units]')
-ax.set_title('My DUNE Plot')
+2. **Add a line** to a command list in `input/plots/`. The six plot kinds
+   are `line`, `scatter`, `hist`, `map`, `cat` and `table`; lower panels
+   (`--lower ratio`, `--lower residual`, ...), stored fits (`--fit`),
+   binned estimators (`--binned --estimator rms`) and per-panel variables
+   are options of the same commands. See the
+   [plotipus README](https://github.com/mantheys/plotipus#readme).
 
-# Save with high resolution
-plt.savefig('plots/my_plot.png', dpi=300, bbox_inches='tight')
+3. **Name things once** in `config/style.json`: `config_dict`/`name_dict`
+   give legend labels, `config_color`/`config_line` colours and line styles.
+
+## DUNE options
+
+The plugin (`src/dune_plotipus`) enables `dune.mplstyle` and adds these
+options to every plot kind:
+
+| Option | Default | |
+|---|---|---|
+| `--dune_label {simulation,preliminary,wip,official,simulation_side,none}` | `[settings] dune_label` | watermark on the first panel |
+| `--dune_label_position X Y` | dunestyle's upper left | axes coordinates of the watermark |
+| `--dune_label_size SIZE` | `xx-large` | watermark font size |
+| `--dune_headroom FRACTION` | `0.2` | y range added on top so the watermark does not cover data |
+
+`[settings] dune_colors = "logo"` in `plotipus.toml` switches to the
+DUNE-logo subset of the Okabe-Ito palette. Approved results only may carry
+the bare `official` watermark; follow the
+[DUNE plot guidelines](https://github.com/DUNE/dune_plot_style/blob/main/guidelines.md).
+
+## Using this template
+
+Click *Use this template* on GitHub (or copy the repository), then replace
+`scripts/make_example_data.py` with your analysis output (or point
+`data_root` in `plotipus.toml` at it), and write your own command lists.
+Extra output directories per list (e.g. a paper's `Figures/` folder) go in
+`plotipus.toml`:
+
+```toml
+[outputs.plots]
+paper = ["../my_paper/Figures"]
 ```
-
-## Examples Included
-
-### 1. Line Plot (`example_lineplot.py`)
-Demonstrates basic line plotting with multiple series, legends, and labels.
-
-### 2. Histogram (`example_histogram.py`)
-Shows how to create histograms for distributions, typical in physics analyses.
-
-### 3. Error Bars (`example_errorbar.py`)
-Illustrates plotting data points with uncertainties in both x and y directions.
-
-### 4. 2D Plots (`example_2dplot.py`)
-Creates heatmaps and contour plots for 2D data visualization.
-
-### 5. Multi-Panel Plots (`example_multipanel.py`)
-Demonstrates creating complex figures with multiple subplots.
-
-## DUNE Style Features
-
-The DUNE matplotlib style includes:
-
-- **High-quality output**: 300 DPI for publications
-- **Professional fonts**: Clear, readable sans-serif fonts
-- **Grid lines**: Light grid for easy data reading
-- **Tick marks**: Inward-pointing ticks on all sides
-- **Color scheme**: Consistent, colorblind-friendly colors
-- **Legend styling**: Clean, unobtrusive legends
-
-## Customization
-
-You can customize the style by editing `styles/dunestyle.mplstyle`. Common modifications:
-
-- **Figure size**: Change `figure.figsize`
-- **Font sizes**: Adjust `font.size`, `axes.labelsize`, etc.
-- **Colors**: Modify `axes.prop_cycle`
-- **Grid appearance**: Edit `grid.alpha`, `grid.linestyle`
-
-## Contributing
-
-To add new examples or improve existing ones:
-
-1. Create your example script in the `examples/` directory
-2. Follow the naming convention: `example_<description>.py`
-3. Include docstrings and comments
-4. Make sure output is saved to `plots/`
-
-## References
-
-- [DUNE Plot Style Repository](https://github.com/DUNE/dune_plot_style)
-- [Matplotlib Documentation](https://matplotlib.org/stable/index.html)
-- [DUNE Collaboration](https://www.dunescience.org/)
 
 ## License
 
-See LICENSE file for details.
+MIT, see [LICENSE](LICENSE).
