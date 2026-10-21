@@ -32,7 +32,7 @@ per-configuration 2D maps).
 git clone https://github.com/DUNE/matplotlib_dunestyle_examples.git
 cd matplotlib_dunestyle_examples
 source setup.sh             # .venv with dune_plot_style + plotipus
-python run_examples.py      # toy data, then every figure and table
+python run.py               # toy data, then every figure and table
 ```
 
 Figures land in `output/plots`, LaTeX/HTML tables in `output/tables`.
@@ -54,10 +54,16 @@ plotipus line --help                 # every option of a plot kind
 plotipus.toml                 project: data root, command lists, style, plugin
 config/style.json             label/colour mappings, legend conventions
 src/dune_plotipus/            plugin: DUNE style sheet + watermark options
-scripts/make_example_data.py  stand-in for an analysis: writes input/data/*.pkl
+input/data/                   result files (*.pkl in Git LFS) + MANIFEST.csv
 input/plots/*_scripts.txt     one figure per line
 input/tables/*_scripts.txt    one table per line
+run.py                        every list (plus data check) in one go
+scripts/data_manifest.py      freeze/verify the data (sizes, MD5, origin)
+scripts/new_project.py        strip the examples from a new project
 output/                       generated (git-ignored)
+
+Examples only (removed by scripts/new_project.py):
+scripts/make_example_data.py  stand-in for an analysis: writes input/data/examples/*.pkl
 docs/gallery/                 the figures shown above
 ```
 
@@ -69,12 +75,13 @@ docs/gallery/                 the figures shown above
    ```python
    pd.DataFrame([{"Energy": energy, "Efficiency": eff, "EfficiencyError": err,
                   "Config": "hd_1x2x6", "Name": "marley", "Variable": "Efficiency"}]
-                ).to_pickle("input/data/hd_1x2x6_marley_Efficiency.pkl")
+                ).to_pickle("input/data/my_study/hd_1x2x6_marley_Efficiency.pkl")
    ```
 
    A `<Column>Error` column is picked up by `--errory`; `Config`/`Name`
    columns (and the `{config}_{name}_{datafile}.pkl` file names) let one
-   command overlay detector configurations and samples.
+   command overlay detector configurations and samples. `--path my_study`
+   points a command at a subfolder of `input/data`.
 
 2. **Add a line** to a command list in `input/plots/`. The six plot kinds
    are `line`, `scatter`, `hist`, `map`, `cat` and `table`; lower panels
@@ -103,11 +110,35 @@ DUNE-logo subset of the Okabe-Ito palette. Approved results only may carry
 the bare `official` watermark; follow the
 [DUNE plot guidelines](https://github.com/DUNE/dune_plot_style/blob/main/guidelines.md).
 
-## Using this template
+## Starting a project from this template
 
-Click *Use this template* on GitHub (or copy the repository), then replace
-`scripts/make_example_data.py` with your analysis output (or point
-`data_root` in `plotipus.toml` at it), and write your own command lists.
+1. Click *Use this template* on GitHub, clone the new repository, then strip
+   the examples:
+
+   ```bash
+   git lfs install                                # once per machine
+   python scripts/new_project.py "My analysis plots"
+   git add -A && git commit -m "Start from the DUNE plot template"
+   ```
+
+   This removes the toy data generator, the example lists and the gallery,
+   writes a short README, an empty `input/plots/main_scripts.txt` and a
+   blank `config/style.json`, and switches CI to manual runs that fetch the
+   LFS data.
+
+2. Put your result files under `input/data/` (they are committed through
+   Git LFS, see `.gitattributes`) and add commands to the lists.
+
+3. For a publication, freeze what the figures were made from:
+
+   ```bash
+   python scripts/data_manifest.py --write   # input/data/MANIFEST.csv: size, MD5, origin (fill in)
+   python scripts/data_manifest.py           # verify later (also run by run.py)
+   ```
+
+   and keep `requirements.txt` pinned (dune_plot_style release, plotipus
+   commit) so the figures can be regenerated identically.
+
 Extra output directories per list (e.g. a paper's `Figures/` folder) go in
 `plotipus.toml`:
 
@@ -115,6 +146,10 @@ Extra output directories per list (e.g. a paper's `Figures/` folder) go in
 [outputs.plots]
 paper = ["../my_paper/Figures"]
 ```
+
+[DUNE/lowe_reco_paper_plots](https://github.com/DUNE/lowe_reco_paper_plots)
+is a full example: every figure and table of a paper, its frozen data and a
+file-by-file comparison with the paper repository.
 
 ## License
 

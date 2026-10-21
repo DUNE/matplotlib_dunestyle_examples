@@ -9,7 +9,7 @@ The first five files reproduce the examples of the official dune_plot_style
 package (examples/matplotlib/example.py); the others show what a typical
 DUNE analysis stores (detector configurations, efficiencies, resolutions).
 
-Usage: python scripts/make_example_data.py [--output input/data]
+Usage: python scripts/make_example_data.py [--output input/data/examples]
 """
 
 import argparse
@@ -104,7 +104,7 @@ def detector_studies(rng):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--output", default=Path(__file__).resolve().parents[1] / "input" / "data", type=Path)
+    parser.add_argument("--output", default=Path(__file__).resolve().parents[1] / "input" / "data" / "examples", type=Path)
     parser.add_argument("--seed", type=int, default=89)
     args = parser.parse_args()
 
