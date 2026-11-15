@@ -22,7 +22,9 @@ command lists only describe *what* to draw.
 | ![](docs/gallery/efficiency.png) | ![](docs/gallery/resolution.png) | ![](docs/gallery/reco_vs_true.png) |
 
 The first six reproduce the examples shipped with dune_plot_style
-(`examples/matplotlib/example.py`); the last row shows typical analysis
+(`examples/matplotlib/example.py`, drawn with plotipus
+[v0.1.0](https://github.com/mantheys/plotipus/releases/tag/v0.1.0) on its
+`classic` base style so that the DUNE style sheet sets the look); the last row shows typical analysis
 figures (one curve per detector configuration and sample, binned estimators,
 per-configuration 2D maps).
 
@@ -105,10 +107,34 @@ options to every plot kind:
 | `--dune_label_size SIZE` | `xx-large` | watermark font size |
 | `--dune_headroom FRACTION` | `0.2` | y range added on top so the watermark does not cover data |
 
-`[settings] dune_colors = "logo"` in `plotipus.toml` switches to the
-DUNE-logo subset of the Okabe-Ito palette. Approved results only may carry
-the bare `official` watermark; follow the
-[DUNE plot guidelines](https://github.com/DUNE/dune_plot_style/blob/main/guidelines.md).
+In `plotipus.toml`, `[settings] dune_colors = "logo"` switches to the
+DUNE-logo subset of the Okabe-Ito palette and `dune_background = "offwhite"`
+to the off-white background of the DUNE slide template. Approved results only
+may carry the bare `official` watermark (see the APB policy linked from the
+guidelines).
+
+## DUNE plot guidelines
+
+The [DUNE plot guidelines](https://github.com/DUNE/dune_plot_style/blob/main/guidelines.md)
+(April 2023) are short; this is how the template covers them, and what is
+still left to each analysis:
+
+| Guideline | In the template |
+|---|---|
+| Watermark: DUNE, Preliminary, Work In Progress or Simulation (*required*) | `--dune_label`, default from `[settings] dune_label` |
+| Vector **and** raster format (*required*) | PNG by default; `--output_suffix <name>.pdf` on a command writes the vector copy (one format per command for now) |
+| Consistent style within a document (*required*) | one style sheet, one `config/style.json` for labels and colours |
+| Sans-serif font, large text | `dune.mplstyle` (Helvetica or fallback) |
+| Okabe-Ito cycle, DUNE-logo subset | style default; `dune_colors = "logo"` |
+| Cividis for continuous scales, bichrome for correlations | style default; `map --cmap` for others |
+| Off-white background | `dune_background = "offwhite"` |
+| y/x ratio 0.70-0.75 | matplotlib default (800x600) |
+| No titles above the plot; information inside the axes | examples use no `--title`; `--dune_label_position` and legends inside the axes |
+| Plot code in version control | the command lists *are* the plot code |
+
+Not covered (left to the analysis): significant figures in annotations,
+capitalisation of axis labels, highlighting DUNE in comparisons with other
+experiments, journal-specific sizes.
 
 ## Starting a project from this template
 
@@ -137,7 +163,7 @@ the bare `official` watermark; follow the
    ```
 
    and keep `requirements.txt` pinned (dune_plot_style release, plotipus
-   commit) so the figures can be regenerated identically.
+   release) so the figures can be regenerated identically.
 
 Extra output directories per list (e.g. a paper's `Figures/` folder) go in
 `plotipus.toml`:
@@ -148,8 +174,9 @@ paper = ["../my_paper/Figures"]
 ```
 
 [DUNE/lowe_reco_paper_plots](https://github.com/DUNE/lowe_reco_paper_plots)
-is a full example: every figure and table of a paper, its frozen data and a
-file-by-file comparison with the paper repository.
+(DUNE members) is a full example: all 46 figures and 7 tables of the
+low-energy reconstruction paper regenerated from frozen data with one
+command, with a pixel-by-pixel comparison against the paper repository.
 
 ## License
 
