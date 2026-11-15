@@ -7,7 +7,8 @@ follow the official DUNE plot style (https://github.com/DUNE/dune_plot_style):
 * adds ``--dune_label`` to every plot kind, drawing the DUNE watermark
   (``Simulation``, ``Preliminary``, ``Work In Progress`` or the bare
   ``DUNE`` of approved results) on the first panel of each figure;
-* optionally switches the colour cycle to the DUNE-logo subset of the palette.
+* optionally switches the colour cycle to the DUNE-logo subset of the palette;
+* optionally sets the off-white figure background of the DUNE slide template.
 
 Project-wide defaults go in the ``[settings]`` table of ``plotipus.toml``::
 
@@ -15,6 +16,7 @@ Project-wide defaults go in the ``[settings]`` table of ``plotipus.toml``::
     dune_label = "simulation"       # default --dune_label
     dune_headroom = 0.2             # fraction of the y range added on top
     dune_colors = "logo"            # or "okabe_ito" (the style default)
+    dune_background = "offwhite"    # or "white" (the style default)
 """
 
 import builtins
@@ -75,6 +77,8 @@ def setup(registry):
     colors = settings.get("dune_colors")
     if colors:
         COLORS[colors]()
+    if settings.get("dune_background", "white") == "offwhite":
+        dunestyle.OffWhiteBackground()
 
     registry.add_argument(
         "--dune_label", choices=[*LABELS, "none"], default=settings.get("dune_label", "none"),
