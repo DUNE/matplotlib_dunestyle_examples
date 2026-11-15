@@ -5,7 +5,9 @@ data_root = "input/data"
 plots = "input/plots"
 tables = "input/tables"
 output = "output"
-style = ["config/style.json"]
+# "classic" keeps plotipus' own look out of the way (8x6 in, 100 dpi, red fit
+# lines), so the dune_plot_style sheet applied by the plugin decides the style.
+style = ["classic", "config/style.json"]
 python_path = ["src"]
 plugins = ["dune_plotipus"]
 

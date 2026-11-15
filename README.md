@@ -22,7 +22,9 @@ command lists only describe *what* to draw.
 | ![](docs/gallery/efficiency.png) | ![](docs/gallery/resolution.png) | ![](docs/gallery/reco_vs_true.png) |
 
 The first six reproduce the examples shipped with dune_plot_style
-(`examples/matplotlib/example.py`); the last row shows typical analysis
+(`examples/matplotlib/example.py`, drawn with plotipus
+[v0.1.0](https://github.com/mantheys/plotipus/releases/tag/v0.1.0) on its
+`classic` base style so that the DUNE style sheet sets the look); the last row shows typical analysis
 figures (one curve per detector configuration and sample, binned estimators,
 per-configuration 2D maps).
 
@@ -161,7 +163,7 @@ experiments, journal-specific sizes.
    ```
 
    and keep `requirements.txt` pinned (dune_plot_style release, plotipus
-   commit) so the figures can be regenerated identically.
+   release) so the figures can be regenerated identically.
 
 Extra output directories per list (e.g. a paper's `Figures/` folder) go in
 `plotipus.toml`:
